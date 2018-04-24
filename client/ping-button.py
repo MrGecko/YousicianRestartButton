@@ -1,4 +1,5 @@
 import sys
+from json import JSONDecodeError
 from queue import Queue
 
 import requests
@@ -15,12 +16,17 @@ CONFIG = {
 def curl_var(var_name):
     url = "{BASE_URL}/{DEVICE_ID}/{VAR_NAME}?access_token={ACCESS_TOKEN}".format(**CONFIG, VAR_NAME=var_name)
     data = requests.get(url)
-    j = data.json()
-    if "result" in j:
-        return j["result"]
-    else:
-        #raise ValueError("Cannot fetch value for variable '{0}': {1}".format(var_name, j))
-        return None
+
+    response = None
+
+    try:
+        j = data.json()
+        if "result" in j:
+            response = j["result"]
+    except JSONDecodeError:
+        pass
+
+    return response
 
 
 if __name__ == "__main__":
@@ -50,6 +56,5 @@ if __name__ == "__main__":
                     pyautogui.press('r')
                     event_queue = Queue()
                     start_time = t
-                    print(button_state)
 
         time.sleep(0.1)
