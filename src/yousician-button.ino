@@ -21,11 +21,14 @@ void setup()
 void loop()
 {
     btnState = digitalRead(btn) == LOW;
-    if (btnState == HIGH)
-        digitalWrite(led, HIGH);
-    else
-        digitalWrite(led, LOW);
-    delay(10);
+    if (btnState == HIGH) {
+      digitalWrite(led, HIGH);
+      Particle.publish("restartButton", PRIVATE);
+      delay(500);
+    }
+    else {
+      digitalWrite(led, LOW);
+    }
 }
 
 
