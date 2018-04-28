@@ -1,35 +1,35 @@
 import sys
 from json import JSONDecodeError
 from flask import Flask, request, jsonify
-from config import AppConfig
 import pyautogui
 import time
 
-
+from client.config import AppConfig
 
 app = Flask(__name__)
 app.config.from_object(AppConfig)
 app.start_time = time.time()
 
-@app.route('/restart', methods=['POST'])
-def restart():
+
+def react(event, react_callback):
     data = request.get_json()
-    if "event" in data and data["event"] == AppConfig.RESTART_EVENT:
+    if "event" in data and data["event"] == event:
         t = time.time()
         if (t - app.start_time) > AppConfig.MIN_DELAY_BETWEEN_STROKES:
-            pyautogui.press('r')
+            react_callback()
             app.start_time = t
     return jsonify(data)
 
+
+@app.route('/restart', methods=['POST'])
+def restart():
+    return react(AppConfig.RESTART_EVENT, lambda: pyautogui.press('r'))
+
+
 @app.route('/pause', methods=['POST'])
 def pause():
-    data = request.get_json()
-    if "event" in data and data["event"] == AppConfig.RESTART_EVENT:
-        t = time.time()
-        if (t - app.start_time) > AppConfig.MIN_DELAY_BETWEEN_STROKES:
-            pyautogui.press('space')
-            app.start_time = t
-    return jsonify(data)
+    return react(AppConfig.PAUSE_EVENT, lambda: pyautogui.press('space'))
+
 
 @app.route('/', methods=['GET'])
 def hello_world_get():
